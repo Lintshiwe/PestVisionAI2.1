@@ -97,4 +97,3 @@ class DatasetCollector:
                     writer.writerows(rows)
 
             logger.debug("Persisted %d dataset crops for frame %s", len(rows), frame_id)
-```},
