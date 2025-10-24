@@ -1,0 +1,42 @@
+{
+  "groups": [
+    {
+      "name": "pestvision",
+      "type": "com.pestvisionai.backend.config.PestVisionProperties",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties"
+    },
+    {
+      "name": "pestvision.spray",
+      "type": "com.pestvisionai.backend.config.PestVisionProperties$Spray",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties",
+      "sourceMethod": "getSpray()"
+    },
+    {
+      "name": "pestvision.vision",
+      "type": "com.pestvisionai.backend.config.PestVisionProperties$Vision",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties",
+      "sourceMethod": "getVision()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "pestvision.spray.confidence-threshold",
+      "type": "java.lang.Double",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties$Spray",
+      "defaultValue": 0.75
+    },
+    {
+      "name": "pestvision.spray.cooldown-seconds",
+      "type": "java.lang.Long",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties$Spray",
+      "defaultValue": 30
+    },
+    {
+      "name": "pestvision.vision.stream-url",
+      "type": "java.lang.String",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties$Vision",
+      "defaultValue": "http:\/\/localhost:8000\/video\/feed"
+    }
+  ],
+  "hints": []
+}

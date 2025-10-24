@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PestVisionAI Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f6f8;
+        color: #1f2933;
+      }
+      header {
+        background: #0f766e;
+        color: #fff;
+        padding: 1.5rem;
+      }
+      main {
+        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+      }
+      section {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(15, 118, 110, 0.15);
+        overflow: hidden;
+      }
+      h2 {
+        margin: 0;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(15, 118, 110, 0.1);
+        background: rgba(15, 118, 110, 0.05);
+      }
+      #video-container img {
+        width: 100%;
+        display: block;
+        background: #000;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+        font-size: 0.95rem;
+      }
+      tbody tr:nth-child(even) {
+        background: rgba(15, 118, 110, 0.04);
+      }
+      .pill {
+        display: inline-block;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        background: rgba(15, 118, 110, 0.15);
+        color: #0f766e;
+        font-weight: 600;
+      }
+      .highlight {
+        font-weight: 600;
+      }
+      .empty-state {
+        padding: 1.5rem;
+        text-align: center;
+        color: #64748b;
+      }
+      .footer {
+        text-align: center;
+        padding: 1rem;
+        font-size: 0.85rem;
+        color: #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>PestVisionAI Operations Dashboard</h1>
+      <p>
+        Monitoring live pest detections, automated spraying, and farm telemetry.
+      </p>
+    </header>
+    <main>
+      <section id="video-container">
+        <h2>Live Camera Feed</h2>
+        <img
+          th:src="${streamUrl}"
+          alt="Live pest detection feed"
+          id="live-feed"
+        />
+      </section>
+      <section>
+        <h2>Latest Detections</h2>
+        <div id="detections-empty" class="empty-state">
+          Waiting for detection events...
+        </div>
+        <table id="detections-table" style="display: none">
+          <thead>
+            <tr>
+              <th>Time (UTC)</th>
+              <th>Stream</th>
+              <th>Service</th>
+              <th>Type</th>
+              <th>Count</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody id="detections-body"></tbody>
+        </table>
+      </section>
+      <section>
+        <h2>Spray Activity</h2>
+        <div id="spray-empty" class="empty-state">No spray activity yet.</div>
+        <table id="spray-table" style="display: none">
+          <thead>
+            <tr>
+              <th>Triggered At (UTC)</th>
+              <th>Reason</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody id="spray-body"></tbody>
+        </table>
+      </section>
+    </main>
+    <div class="footer">
+      System auto-refreshes with live data. Ensure physical sprayers are
+      supervised.
+    </div>
+    <script>
+      const detectionBody = document.getElementById('detections-body')
+      const detectionTable = document.getElementById('detections-table')
+      const detectionEmpty = document.getElementById('detections-empty')
+      const sprayBody = document.getElementById('spray-body')
+      const sprayTable = document.getElementById('spray-table')
+      const sprayEmpty = document.getElementById('spray-empty')
+
+      function formatConfidence(value) {
+        return (value * 100).toFixed(1) + '%'
+      }
+
+      function prependRow(tbody, rowHtml, emptyState, table) {
+        const wrapper = document.createElement('tr')
+        wrapper.innerHTML = rowHtml
+        tbody.insertBefore(wrapper, tbody.firstChild)
+        emptyState.style.display = 'none'
+        table.style.display = ''
+        while (tbody.children.length > 20) {
+          tbody.removeChild(tbody.lastChild)
+        }
+      }
+
+      function loadRecent() {
+        Promise.all([
+          fetch('/api/detections/recent').then((resp) => resp.json()),
+          fetch('/api/detections/sprays/recent').then((resp) => resp.json()),
+        ])
+          .then(([detections, sprays]) => {
+            if (Array.isArray(detections) && detections.length > 0) {
+              detectionBody.innerHTML = ''
+              detections.forEach((item) => {
+                prependRow(
+                  detectionBody,
+                  `<td>${item.detectedAt}</td>
+                         <td>${item.streamId}</td>
+                         <td>${item.serviceName}</td>
+                         <td>${item.pestType}</td>
+                         <td><span class="pill">${item.pestCount}</span></td>
+                         <td class="highlight">${formatConfidence(
+                           item.maxConfidence
+                         )}</td>`,
+                  detectionEmpty,
+                  detectionTable
+                )
+              })
+            }
+            if (Array.isArray(sprays) && sprays.length > 0) {
+              sprayBody.innerHTML = ''
+              sprays.forEach((item) => {
+                prependRow(
+                  sprayBody,
+                  `<td>${item.triggeredAt}</td><td>${
+                    item.reason
+                  }</td><td class="highlight">${formatConfidence(
+                    item.confidence
+                  )}</td>`,
+                  sprayEmpty,
+                  sprayTable
+                )
+              })
+            }
+          })
+          .catch((err) => console.error('Failed to load recent telemetry', err))
+      }
+
+      function connectSse() {
+        const source = new EventSource('/api/detections/stream')
+        source.onmessage = (event) => {
+          const payload = JSON.parse(event.data)
+          if (payload.detection) {
+            const d = payload.detection
+            prependRow(
+              detectionBody,
+              `<td>${d.detectedAt}</td>
+                     <td>${d.streamId}</td>
+                     <td>${d.serviceName}</td>
+                     <td>${d.pestType}</td>
+                     <td><span class="pill">${d.pestCount}</span></td>
+                     <td class="highlight">${formatConfidence(
+                       d.maxConfidence
+                     )}</td>`,
+              detectionEmpty,
+              detectionTable
+            )
+          }
+          if (payload.sprayEvent) {
+            const s = payload.sprayEvent
+            prependRow(
+              sprayBody,
+              `<td>${s.triggeredAt}</td><td>${
+                s.reason
+              }</td><td class="highlight">${formatConfidence(
+                s.confidence
+              )}</td>`,
+              sprayEmpty,
+              sprayTable
+            )
+          }
+        }
+        source.onerror = (err) => {
+          console.warn('SSE connection lost, retrying...', err)
+          source.close()
+          setTimeout(connectSse, 5000)
+        }
+      }
+
+      loadRecent()
+      connectSse()
+    </script>
+  </body>
+</html>
