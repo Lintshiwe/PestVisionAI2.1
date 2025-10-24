@@ -36,6 +36,15 @@ def get_pipeline() -> VisionPipeline:
     return pipeline
 
 
+@app.get("/")
+async def root() -> dict[str, str]:
+    return {
+        "message": "PestVisionAI vision service running",
+        "stream": "/video/feed",
+        "health": "/health",
+    }
+
+
 @app.get("/health")
 async def health(settings: Settings = Depends(get_settings)) -> dict[str, str]:
     return {"status": "ok", "service": settings.service_name}
