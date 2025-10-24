@@ -31,7 +31,7 @@ class DetectionPublisher:
             logger.info("Skipping backend push (PV_SKIP_BACKEND=true)")
             return
         client = await self._get_client()
-        payload = envelope.model_dump(mode="json")
+        payload = envelope.model_dump(by_alias=True, mode="json")
         try:
             response = await client.post(self._url, json=payload)
             response.raise_for_status()
