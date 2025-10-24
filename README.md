@@ -13,21 +13,29 @@ The platform is composed of three main subsystems:
    - Annotates the camera feed with bounding boxes and trajectory traces.
    - Streams annotated frames over HTTP for the web frontend and posts detection events to the backend.
    - Triggers spray commands on high-confidence detections.
+   - Stores cropped detections (excluding humans) into a dataset catalog to support continual learning.
 
 2. **Operations Backend (Java Spring Boot)**
 
    - Exposes REST APIs for receiving detection events and managing spray actions.
    - Persists telemetry, detections, and spray logs in a relational database (H2 for development, PostgreSQL recommended for production).
-   - Broadcasts live detections and spray events via Server-Sent Events (SSE) to the frontend.
-   - Provides farmer-facing dashboards (Thymeleaf views) to review historical activity, live detections, and system health.
+   - Broadcasts live detections and spray events via Server-Sent Events (SSE) to consuming clients.
+   - Generates concise recommendations for each detection using Google Gemini (optional) and stores the summaries alongside detections.
+   - Provides REST endpoints for Excel exports and integrations (no embedded UI).
 
-3. **Hardware Integration (Simulation Layer)**
+3. **Live Feed Frontend (Node + Express)**
+
+   - Lightweight standalone server (port 3000) that renders only the live MJPEG stream, proxying the camera feed so viewers never hit the Python service directly.
+   - Fetches its configuration from `/config.json`, making it easy to point at different stream or backend origins.
+   - Decouples UI concerns from the Spring Boot API so each tier can scale independently.
+
+4. **Hardware Integration (Simulation Layer)**
    - Abstracts spray system control. In development it logs actions; in production this layer interfaces with physical actuators via Modbus, GPIO, or vendor SDKs.
    - Receives commands from the backend and acknowledges completion.
 
 ## High-Level Data Flow
 
-```
+```text
 Camera -> Python Vision Service -> (detections, frames) -> Java Backend -> Farmers' Web UI
                                               |                                   |
                                               +----> Spray Controller (actuate) <-+
@@ -42,21 +50,22 @@ Camera -> Python Vision Service -> (detections, frames) -> Java Backend -> Farme
 ## Tech Stack
 
 - **Python 3.10+** with FastAPI, OpenCV, Torch/TensorFlow (model dependent), NumPy.
-- **Java 21** with Spring Boot 3, Spring WebFlux, Spring Data JPA, H2/PostgreSQL.
+- **Java 17** with Spring Boot 3, Spring WebFlux, Spring Data JPA, H2/PostgreSQL.
 - **Frontend** rendered by Spring MVC + Thymeleaf, enhanced with vanilla JS for SSE, and HTML `<img>` elements for MJPEG stream.
 - **Messaging** via HTTP POST (vision -> backend) and SSE (backend -> UI).
 
 ## Repository Structure
 
-```
+```text
 PestVisionAI2.1/
 ├── README.md
 ├── python/
 │   └── vision_service/
 ├── java/
 │   └── pest-backend/
+├── frontend/
 └── infra/
-    └── docker/
+   └── docker/
 ```
 
 ## Getting Started
@@ -97,9 +106,25 @@ PestVisionAI2.1/
    mvn spring-boot:run
    ```
 
-5. **Access the farmer dashboard**
+5. **Start the live-feed frontend (port 3000)**
 
-   Open `http://localhost:8080/dashboard` in a browser. The live MJPEG feed is proxied from `http://localhost:8000/video/feed`. Detection and spray events stream into the dashboard via SSE.
+   ```bash
+   cd frontend
+   npm install
+   npm start
+   ```
+
+   This launches a minimal Express server on `http://localhost:3000` that renders the live camera feed only. Use `STREAM_URL` or `BACKEND_BASE_URL` env vars to point at alternate services if needed.
+
+6. **Access the backend APIs**
+
+   The Spring Boot service remains at `http://localhost:8082` and now exposes APIs only (no rendered dashboard). Live detections continue to flow from the Python service to the backend.
+
+### Gemini AI Integration
+
+- Set the `GEMINI_API_KEY` environment variable before launching the backend to enable AI summaries.
+- Summaries are trimmed to ~2 KB and displayed in the dashboard alongside detection metadata.
+- When no API key is supplied, detections persist without AI enrichment and the system logs that analysis is skipped.
 
 ### Data Persistence
 

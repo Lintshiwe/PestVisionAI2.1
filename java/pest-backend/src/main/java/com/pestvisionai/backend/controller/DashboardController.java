@@ -1,22 +1,19 @@
 package com.pestvisionai.backend.controller;
 
-import com.pestvisionai.backend.config.PestVisionProperties;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import java.util.Map;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 public class DashboardController {
 
-    private final PestVisionProperties properties;
-
-    public DashboardController(PestVisionProperties properties) {
-        this.properties = properties;
-    }
-
     @GetMapping({"/", "/dashboard"})
-    public String dashboard(Model model) {
-        model.addAttribute("streamUrl", properties.getVision().getStreamUrl());
-        return "dashboard";
+    public ResponseEntity<Map<String, Object>> rootMessage() {
+        return ResponseEntity.ok(Map.of(
+                "message", "PestVisionAI backend is running",
+                "documentation", "See README for available API routes",
+                "liveFeed", "http://localhost:3000/"
+        ));
     }
 }

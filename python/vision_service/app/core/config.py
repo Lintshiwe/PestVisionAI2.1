@@ -11,7 +11,7 @@ class Settings(BaseModel):
     """Runtime configuration for the vision service."""
 
     camera_source: Union[int, str] = Field(default=0, description="Camera index or stream URL")
-    backend_base_url: str = Field(default="http://localhost:8080", description="Java backend origin")
+    backend_base_url: str = Field(default="http://localhost:8082", description="Java backend origin")
     backend_detection_endpoint: str = Field(
         default="/api/detections",
         description="Endpoint receiving detection payloads",
@@ -41,7 +41,7 @@ def get_settings() -> Settings:
 
     env_map: Dict[str, Any] = {
         "camera_source": os.getenv("PV_CAMERA_SOURCE", "0"),
-        "backend_base_url": os.getenv("PV_BACKEND_BASE_URL", "http://localhost:8080"),
+    "backend_base_url": os.getenv("PV_BACKEND_BASE_URL", "http://localhost:8082"),
         "backend_detection_endpoint": os.getenv("PV_BACKEND_DETECTION_ENDPOINT", "/api/detections"),
         "frame_width": int(os.getenv("PV_FRAME_WIDTH", "1280")),
         "frame_height": int(os.getenv("PV_FRAME_HEIGHT", "720")),

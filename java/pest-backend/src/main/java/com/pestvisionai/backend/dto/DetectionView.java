@@ -12,6 +12,7 @@ public record DetectionView(
         int pestCount,
         double maxConfidence,
         String snapshotPath,
+        String analysisSummary,
         List<BoundingBoxDto> boxes
 ) {
 }

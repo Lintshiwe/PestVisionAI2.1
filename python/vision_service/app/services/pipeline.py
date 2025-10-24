@@ -28,7 +28,8 @@ class VisionPipeline:
         self._publisher = DetectionPublisher()
         self._detector = PestDetector()
         self._tracker = TrackManager()
-    self._dataset_collector = DatasetCollector()
+        self._dataset_collector = DatasetCollector()
+        self._excluded_labels = {label.lower() for label in self._settings.excluded_labels}
         self._capture = cv2.VideoCapture(self._settings.camera_source)
         self._capture.set(cv2.CAP_PROP_FRAME_WIDTH, self._settings.frame_width)
         self._capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self._settings.frame_height)
@@ -68,7 +69,7 @@ class VisionPipeline:
             frame_counter += 1
             frame_matrix = cast(NDArray[np.uint8], frame)
             frame_id, boxes, metrics = self._detector.detect(frame_matrix)
-            filtered_boxes = [box for box in boxes if box.label.lower() not in self._settings.excluded_labels]
+            filtered_boxes = [box for box in boxes if box.label.lower() not in self._excluded_labels]
             if filtered_boxes:
                 self._tracker.update_tracks(filtered_boxes)
                 annotated_frame = self._tracker.draw_annotations(frame_matrix, filtered_boxes)

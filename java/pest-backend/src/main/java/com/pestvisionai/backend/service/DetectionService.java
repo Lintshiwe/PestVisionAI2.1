@@ -27,6 +27,7 @@ public class DetectionService {
     private final SprayEventRepository sprayEventRepository;
     private final SprayControllerClient sprayControllerClient;
     private final DetectionEventPublisher eventPublisher;
+    private final GeminiAnalysisService geminiAnalysisService;
     private final double sprayConfidenceThreshold;
     private final Duration sprayCooldown;
     private Instant lastSprayInstant = Instant.EPOCH;
@@ -36,11 +37,13 @@ public class DetectionService {
             SprayEventRepository sprayEventRepository,
             SprayControllerClient sprayControllerClient,
             DetectionEventPublisher eventPublisher,
+            GeminiAnalysisService geminiAnalysisService,
             PestVisionProperties properties) {
         this.detectionRepository = detectionRepository;
         this.sprayEventRepository = sprayEventRepository;
         this.sprayControllerClient = sprayControllerClient;
         this.eventPublisher = eventPublisher;
+        this.geminiAnalysisService = geminiAnalysisService;
         this.sprayConfidenceThreshold = properties.getSpray().getConfidenceThreshold();
         this.sprayCooldown = Duration.ofSeconds(properties.getSpray().getCooldownSeconds());
     }
@@ -48,7 +51,10 @@ public class DetectionService {
     @Transactional
     public DetectionProcessingResult recordDetection(DetectionEnvelopeDto envelope) {
         Objects.requireNonNull(envelope, "Detection envelope must not be null");
-    Detection detection = toEntity(envelope);
+        Detection detection = toEntity(envelope);
+    geminiAnalysisService.generateSummary(detection)
+        .map(summary -> summary.length() > 2000 ? summary.substring(0, 2000) : summary)
+        .ifPresent(detection::setAnalysisSummary);
         Detection saved = detectionRepository.save(detection);
         SprayEvent sprayEvent = maybeTriggerSpray(saved);
         DetectionProcessingResult result = new DetectionProcessingResult(saved, sprayEvent);
@@ -147,6 +153,7 @@ public class DetectionService {
                     detection.getPestCount(),
                     detection.getMaxConfidence(),
                     detection.getSnapshotPath(),
+            detection.getAnalysisSummary(),
                     detection.getBoxes().stream()
                             .map(box -> new BoundingBoxDto(
                                     box.getX(),

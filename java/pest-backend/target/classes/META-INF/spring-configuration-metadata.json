@@ -6,6 +6,18 @@
       "sourceType": "com.pestvisionai.backend.config.PestVisionProperties"
     },
     {
+      "name": "pestvision.ai",
+      "type": "com.pestvisionai.backend.config.PestVisionProperties$Ai",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties",
+      "sourceMethod": "getAi()"
+    },
+    {
+      "name": "pestvision.ai.gemini",
+      "type": "com.pestvisionai.backend.config.PestVisionProperties$Ai$Gemini",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties$Ai",
+      "sourceMethod": "getGemini()"
+    },
+    {
       "name": "pestvision.spray",
       "type": "com.pestvisionai.backend.config.PestVisionProperties$Spray",
       "sourceType": "com.pestvisionai.backend.config.PestVisionProperties",
@@ -19,6 +31,18 @@
     }
   ],
   "properties": [
+    {
+      "name": "pestvision.ai.gemini.api-key",
+      "type": "java.lang.String",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties$Ai$Gemini",
+      "defaultValue": ""
+    },
+    {
+      "name": "pestvision.ai.gemini.model",
+      "type": "java.lang.String",
+      "sourceType": "com.pestvisionai.backend.config.PestVisionProperties$Ai$Gemini",
+      "defaultValue": "gemini-2.5-flash"
+    },
     {
       "name": "pestvision.spray.confidence-threshold",
       "type": "java.lang.Double",

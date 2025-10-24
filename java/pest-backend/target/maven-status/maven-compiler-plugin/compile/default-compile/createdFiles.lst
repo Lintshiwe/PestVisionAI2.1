@@ -1,9 +1,12 @@
 com\pestvisionai\backend\config\PestVisionProperties$Spray.class
+com\pestvisionai\backend\service\GeminiAnalysisService.class
 com\pestvisionai\backend\repository\SprayEventRepository.class
 com\pestvisionai\backend\service\DetectionEventPublisher.class
 com\pestvisionai\backend\service\DetectionService$DetectionMapper.class
 META-INF\spring-configuration-metadata.json
 com\pestvisionai\backend\config\PestVisionProperties$Vision.class
+com\pestvisionai\backend\controller\ReportController.class
+com\pestvisionai\backend\config\PestVisionProperties$Ai.class
 com\pestvisionai\backend\dto\DetectionEnvelopeDto.class
 com\pestvisionai\backend\dto\LiveEventDto.class
 com\pestvisionai\backend\controller\DashboardController.class
@@ -13,6 +16,7 @@ com\pestvisionai\backend\service\SprayControllerClient.class
 com\pestvisionai\backend\model\Detection.class
 com\pestvisionai\backend\controller\DetectionController.class
 com\pestvisionai\backend\dto\DetectionView.class
+com\pestvisionai\backend\service\ReportExportService.class
 com\pestvisionai\backend\dto\BoundingBoxDto.class
 com\pestvisionai\backend\dto\DetectionEventDto.class
 com\pestvisionai\backend\dto\SprayEventView.class
@@ -20,4 +24,5 @@ com\pestvisionai\backend\repository\DetectionRepository.class
 com\pestvisionai\backend\model\BoundingBox.class
 com\pestvisionai\backend\service\DetectionProcessingResult.class
 com\pestvisionai\backend\model\SprayEvent.class
+com\pestvisionai\backend\config\PestVisionProperties$Ai$Gemini.class
 com\pestvisionai\backend\service\DetectionService.class

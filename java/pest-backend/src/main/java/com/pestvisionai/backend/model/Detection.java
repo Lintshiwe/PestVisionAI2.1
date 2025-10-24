@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +29,8 @@ public class Detection {
     private int pestCount;
     private double maxConfidence;
     private String snapshotPath;
+    @Column(length = 2048)
+    private String analysisSummary;
 
     @ElementCollection
     @CollectionTable(name = "detection_boxes", joinColumns = @JoinColumn(name = "detection_id"))
@@ -91,6 +94,14 @@ public class Detection {
 
     public void setSnapshotPath(String snapshotPath) {
         this.snapshotPath = snapshotPath;
+    }
+
+    public String getAnalysisSummary() {
+        return analysisSummary;
+    }
+
+    public void setAnalysisSummary(String analysisSummary) {
+        this.analysisSummary = analysisSummary;
     }
 
     public List<BoundingBox> getBoxes() {

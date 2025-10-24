@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
   application:
@@ -32,3 +32,7 @@ pestvision:
   spray:
     confidence-threshold: 0.75
     cooldown-seconds: 30
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-2.5-flash
